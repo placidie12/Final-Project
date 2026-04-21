@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Internerships', '0001_initial'),
+        ('Internships', '0001_initial'),
     ]
 
     operations = [

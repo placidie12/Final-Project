@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import StudentProfile, OrganizationProfile
-from Internerships.models import InternshipPost
+from Internships.models import InternshipPost
 
 
 class Application(models.Model):

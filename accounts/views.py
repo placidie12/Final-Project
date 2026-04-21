@@ -42,6 +42,23 @@ class LoginView(APIView):
         })
 
 
+class SuperuserLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        if not user.is_superuser:
+            return Response({'detail': 'Access denied. Superuser only.'}, status=status.HTTP_403_FORBIDDEN)
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
+
+
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 

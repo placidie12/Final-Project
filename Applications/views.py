@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import Application, Placement
 from .serializers import ApplicationSerializer, PlacementSerializer
 from accounts.models import StudentProfile, OrganizationProfile
-from Internerships.models import InternshipPost
+from Internships.models import InternshipPost
 
 
 class StudentApplicationView(APIView):

@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('accounts', '0002_universityadminprofile'),
+         
     ]
 
     operations = [

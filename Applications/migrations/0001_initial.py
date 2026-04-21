@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('Internerships', '0002_internshippost_slots'),
+        ('Internships', '0002_internshippost_slots'),
         ('accounts', '0002_universityadminprofile'),
     ]
 
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('applied_at', models.DateTimeField(auto_now_add=True)),
                 ('reviewed_at', models.DateTimeField(blank=True, null=True)),
                 ('notes', models.TextField(blank=True, help_text='Organization notes about this application')),
-                ('internship', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='Internerships.internshippost')),
+                ('internship', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='Internships.internshippost')),
                 ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='accounts.studentprofile')),
             ],
             options={
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[('active', 'Active'), ('completed', 'Completed'), ('terminated', 'Terminated')], default='active', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('application', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='placement', to='Applications.application')),
-                ('internship', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='placements', to='Internerships.internshippost')),
+                ('internship', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='placements', to='Internships.internshippost')),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='placements', to='accounts.organizationprofile')),
                 ('student', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='placements', to='accounts.studentprofile')),
             ],
