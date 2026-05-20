@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternTrack - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary:      #0dcaf0;
+            --primary-dark: #0aa2c0;
+            --bg:           #ffffff;
+            --text:         #000000;
+            --text-muted:   #6c757d;
+            --card:         #ffffff;
+            --border:       #e0e0e0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0fbff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .branding {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .branding h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .branding p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .login-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 32px rgba(13,202,240,0.1);
+            border: 1px solid rgba(13,202,240,0.2);
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            background-color: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .card-icon i { color: #fff; font-size: 1.1rem; }
+
+        .login-card h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-control {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+        }
+
+        .forgot-link {
+            font-size: 0.8rem;
+            color: var(--primary-dark);
+            text-decoration: none;
+            float: right;
+            margin-top: 6px;
+        }
+
+        .forgot-link:hover { text-decoration: underline; }
+
+        .btn-signin {
+            width: 100%;
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            padding: 9px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 14px;
+            transition: background 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-signin:hover { background-color: var(--primary-dark); color: #fff; }
+        .btn-signin:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .divider hr { flex: 1; border-color: var(--border); }
+        .divider span { font-size: 0.78rem; color: #aaa; }
+
+        .btn-create {
+            width: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            padding: 9px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-create:hover { border-color: var(--primary); color: var(--primary-dark); }
+
+        .support-link {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.78rem;
+            color: #aaa;
+        }
+
+        .support-link a { color: var(--primary-dark); text-decoration: none; }
+        .support-link a:hover { text-decoration: underline; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+
+        /* Code input */
+        .code-inputs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .code-input {
+            width: 45px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .code-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+        }
+
+        .resend-link {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        .resend-link a {
+            color: var(--primary-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .resend-link a:hover { text-decoration: underline; }
+
+        .hidden { display: none; }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 20px 16px; }
+            .branding h1 { font-size: 1.3rem; }
+            .code-input { width: 40px; height: 45px; font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container">
+        <div id="error-toast" class="toast align-items-center text-bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-msg"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="branding">
+        <h1><i class="bi bi-briefcase-fill me-2" style="color:var(--primary)"></i>InternTrack</h1>
+        <p>Learn &bull; Explore &bull; Connect</p>
+    </div>
+
+    <div class="login-card">
+        <!-- Step 1: Email & Password -->
+        <div id="login-step">
+            <div class="d-flex align-items-center mb-3">
+                <a href="/" class="text-decoration-none text-muted me-auto" style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Home
+                </a>
+            </div>
+            <div class="card-icon">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </div>
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to your account to continue</p>
+
+            <form id="login-form">
+                <div class="mb-3">
+                    <label class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+                </div>
+                <div class="mb-1">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                </div>
+                <a href="/forgot-password/" class="forgot-link">Forgot password?</a>
+
+                <button type="submit" class="btn-signin" id="submit-btn">
+                    <span id="btn-text">Sign In</span>
+                    <span id="btn-spinner" class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+            </form>
+
+            <div class="divider"><hr><span>or</span><hr></div>
+            <a href="/register/" class="btn-create">Create an account</a>
+
+            <div class="support-link">
+                Having trouble? <a href="/contact/">Contact support</a>
+            </div>
+        </div>
+
+        <!-- Step 2: Verification Code -->
+        <div id="code-step" class="hidden">
+            <div class="card-icon">
+                <i class="bi bi-shield-check"></i>
+            </div>
+            <h2>Enter Verification Code</h2>
+            <p class="subtitle">We sent a 6-digit code to <strong id="user-email"></strong></p>
+
+            <form id="code-form">
+                <div class="code-inputs">
+                    <input type="text" class="code-input" maxlength="1" id="code1" autofocus>
+                    <input type="text" class="code-input" maxlength="1" id="code2">
+                    <input type="text" class="code-input" maxlength="1" id="code3">
+                    <input type="text" class="code-input" maxlength="1" id="code4">
+                    <input type="text" class="code-input" maxlength="1" id="code5">
+                    <input type="text" class="code-input" maxlength="1" id="code6">
+                </div>
+
+                <button type="submit" class="btn-signin" id="verify-btn">
+                    <span id="verify-text">Verify Code</span>
+                    <span id="verify-spinner" class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+            </form>
+
+            <div class="resend-link">
+                Didn't receive code? <a href="#" id="resend-link">Resend</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let userEmail = '';
+
+        // Step 1: Login
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email     = document.getElementById('email').value;
+            const password  = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText   = document.getElementById('btn-text');
+            const spinner   = document.getElementById('btn-spinner');
+
+            btnText.textContent = 'Signing in...';
+            spinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            try {
+                const res  = await fetch('/api/accounts/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showToast(data.non_field_errors?.[0] || 'Invalid email or password.');
+                    return;
+                }
+
+                // Show code verification screen
+                userEmail = email;
+                document.getElementById('user-email').textContent = email;
+                document.getElementById('login-step').classList.add('hidden');
+                document.getElementById('code-step').classList.remove('hidden');
+                document.getElementById('code1').focus();
+
+            } catch (err) {
+                showToast('Something went wrong. Please try again.');
+            } finally {
+                btnText.textContent = 'Sign In';
+                spinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Step 2: Verify Code
+        document.getElementById('code-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const code = 
+                document.getElementById('code1').value +
+                document.getElementById('code2').value +
+                document.getElementById('code3').value +
+                document.getElementById('code4').value +
+                document.getElementById('code5').value +
+                document.getElementById('code6').value;
+
+            if (code.length !== 6) {
+                showToast('Please enter all 6 digits.');
+                return;
+            }
+
+            const verifyBtn = document.getElementById('verify-btn');
+            const verifyText = document.getElementById('verify-text');
+            const verifySpinner = document.getElementById('verify-spinner');
+
+            verifyText.textContent = 'Verifying...';
+            verifySpinner.classList.remove('d-none');
+            verifyBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/accounts/verify-code/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, code })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showToast(data.detail || 'Invalid or expired code.');
+                    return;
+                }
+
+                localStorage.setItem('access',  data.access);
+                localStorage.setItem('refresh', data.refresh);
+                localStorage.setItem('user',    JSON.stringify(data.user));
+
+                const role = data.user.role;
+                if      (role === 'student')          window.location.href = '/dashboard/student/';
+                else if (role === 'organization')     window.location.href = '/dashboard/organization/';
+                else if (role === 'supervisor')       window.location.href = '/dashboard/supervisor/';
+                else if (role === 'university_admin') window.location.href = '/dashboard/university/';
+                else window.location.href = '/';
+
+            } catch (err) {
+                showToast('Something went wrong. Please try again.');
+            } finally {
+                verifyText.textContent = 'Verify Code';
+                verifySpinner.classList.add('d-none');
+                verifyBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus next input
+        document.querySelectorAll('.code-input').forEach((input, index, inputs) => {
+            input.addEventListener('input', function() {
+                if (this.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Resend code
+        document.getElementById('resend-link').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await fetch('/api/accounts/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                showToast('New code sent to your email.', 'success');
+            } catch (err) {
+                showToast('Failed to resend code.');
+            }
+        });
+
+        function showToast(message, type = 'danger') {
+            const toast = document.getElementById('error-toast');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            document.getElementById('toast-msg').textContent = message;
+            new bootstrap.Toast(toast).show();
+        }
+    </script>
+</body>
+</html>

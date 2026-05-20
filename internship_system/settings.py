@@ -74,7 +74,7 @@ ROOT_URLCONF = 'internship_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'internship_system' / 'Templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,6 +85,7 @@ TEMPLATES = [
         },
     },
 ]
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 WSGI_APPLICATION = 'internship_system.wsgi.application'
 
@@ -144,3 +145,12 @@ STATIC_URL = 'static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = '<your_gmail@gmail.com>'
+EMAIL_HOST_PASSWORD = '<your_gmail_app_password>'
+DEFAULT_FROM_EMAIL = '<your_gmail@gmail.com>'

@@ -1,0 +1,341 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Student Dashboard - InternTrack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(13,202,240,0.15); }
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .stat-label { font-size: 0.8rem; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.8rem; font-weight: 800; color: #000; line-height: 1; }
+
+    .section-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        overflow: hidden;
+    }
+    .section-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .section-header h6 { font-weight: 700; margin: 0; font-size: 0.95rem; }
+
+    .placement-banner {
+        background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+        border-radius: 12px;
+        padding: 24px;
+        color: #000;
+        position: relative;
+        overflow: hidden;
+    }
+    .placement-banner::after {
+        content: '\F1C5';
+        font-family: 'bootstrap-icons';
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 5rem;
+        opacity: 0.15;
+    }
+    .progress { height: 8px; border-radius: 8px; background: rgba(0,0,0,0.15); }
+    .progress-bar { background: #000; border-radius: 8px; }
+
+    .log-item {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-date { font-size: 0.75rem; color: #6c757d; white-space: nowrap; }
+    .log-title { font-size: 0.88rem; font-weight: 600; color: #000; }
+    .log-sub { font-size: 0.78rem; color: #6c757d; }
+
+    .notif-item {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item.unread { background: #f0fbff; }
+    .notif-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .notif-title { font-size: 0.88rem; font-weight: 600; color: #000; }
+    .notif-msg { font-size: 0.78rem; color: #6c757d; }
+    .notif-time { font-size: 0.72rem; color: #aaa; white-space: nowrap; }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    .empty-state i { font-size: 2.5rem; color: #dee2e6; display: block; margin-bottom: 10px; }
+    .empty-state p { font-size: 0.85rem; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-800 mb-0" id="greeting">Good morning!</h4>
+        <p class="text-muted small mb-0">Here's what's happening with your internship today.</p>
+    </div>
+    <a href="/internships/" class="btn btn-sm" style="background:#0dcaf0; color:#000; font-weight:700; border-radius:8px; padding:8px 18px;">
+        <i class="bi bi-search me-1"></i> Browse Internships
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4" id="stats-row">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#e8fafd;">
+                <i class="bi bi-file-earmark-text" style="color:#0aa2c0;"></i>
+            </div>
+            <div>
+                <div class="stat-label">Applications</div>
+                <div class="stat-value" id="stat-applications">—</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fff3cd;">
+                <i class="bi bi-hourglass-split" style="color:#f59e0b;"></i>
+            </div>
+            <div>
+                <div class="stat-label">Pending</div>
+                <div class="stat-value" id="stat-pending">—</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#d1fae5;">
+                <i class="bi bi-check-circle" style="color:#16a34a;"></i>
+            </div>
+            <div>
+                <div class="stat-label">Approved</div>
+                <div class="stat-value" id="stat-approved">—</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#fce7f3;">
+                <i class="bi bi-bell" style="color:#db2777;"></i>
+            </div>
+            <div>
+                <div class="stat-label">Unread Notifs</div>
+                <div class="stat-value" id="stat-notifs">—</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Placement -->
+<div class="mb-4" id="placement-section" style="display:none;">
+    <div class="placement-banner">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge mb-2" style="background:rgba(0,0,0,0.2); color:#000; font-size:0.72rem;">ACTIVE PLACEMENT</span>
+                <h5 class="fw-800 mb-1" id="placement-title">—</h5>
+                <p class="mb-3 small" id="placement-org">—</p>
+                <div class="d-flex gap-3 flex-wrap small mb-3">
+                    <span><i class="bi bi-calendar3 me-1"></i><span id="placement-dates">—</span></span>
+                    <span><i class="bi bi-geo-alt me-1"></i><span id="placement-location">—</span></span>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="fw-600">Progress</span>
+                        <span id="placement-progress-text">0%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" id="placement-progress-bar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mt-3 mt-md-0 d-flex gap-2 flex-wrap">
+                <a href="/tracking/logs/add/" class="btn btn-sm fw-700" style="background:#000; color:#fff; border-radius:8px;">
+                    <i class="bi bi-plus-circle me-1"></i> Add Log
+                </a>
+                <a href="/tracking/" class="btn btn-sm fw-700" style="background:rgba(0,0,0,0.15); color:#000; border-radius:8px;">
+                    View Details
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Recent Logs -->
+    <div class="col-md-6">
+        <div class="section-card">
+            <div class="section-header">
+                <h6><i class="bi bi-journal-text me-2" style="color:#0aa2c0;"></i>Recent Activity Logs</h6>
+                <a href="/tracking/logs/" class="small text-decoration-none" style="color:#0aa2c0;">View all</a>
+            </div>
+            <div id="logs-list">
+                <div class="empty-state">
+                    <i class="bi bi-journal-x"></i>
+                    <p>No logs submitted yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unread Notifications -->
+    <div class="col-md-6">
+        <div class="section-card">
+            <div class="section-header">
+                <h6><i class="bi bi-bell me-2" style="color:#db2777;"></i>Notifications</h6>
+                <a href="/notifications/" class="small text-decoration-none" style="color:#0aa2c0;">View all</a>
+            </div>
+            <div id="notifs-list">
+                <div class="empty-state">
+                    <i class="bi bi-bell-slash"></i>
+                    <p>No notifications yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (!token) { window.location.href = '/login/'; }
+
+    // Greeting
+    const hour = new Date().getHours();
+    document.getElementById('greeting').textContent =
+        (hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening') + ', ' +
+        (JSON.parse(localStorage.getItem('user') || '{}').first_name || '') + '!';
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    // Load all data
+    Promise.all([
+        fetch('/api/applications/my/', { headers }).then(r => r.json()).catch(() => []),
+        fetch('/api/applications/my-placement/', { headers }).then(r => r.json()).catch(() => null),
+        fetch('/api/tracking/logs/', { headers }).then(r => r.json()).catch(() => []),
+        fetch('/api/notifications/', { headers }).then(r => r.json()).catch(() => []),
+    ]).then(([applications, placement, logs, notifications]) => {
+
+        // Stats
+        const apps = Array.isArray(applications) ? applications : [];
+        document.getElementById('stat-applications').textContent = apps.length;
+        document.getElementById('stat-pending').textContent  = apps.filter(a => a.status === 'pending').length;
+        document.getElementById('stat-approved').textContent = apps.filter(a => a.status === 'approved').length;
+
+        const notifs = Array.isArray(notifications) ? notifications : [];
+        const unread = notifs.filter(n => !n.is_read).length;
+        document.getElementById('stat-notifs').textContent = unread;
+
+        // Active Placement
+        if (placement && placement.id) {
+            document.getElementById('placement-section').style.display = 'block';
+            document.getElementById('placement-title').textContent    = placement.internship_title || '—';
+            document.getElementById('placement-org').textContent      = placement.organization_name || '—';
+            document.getElementById('placement-location').textContent = placement.location || '—';
+            document.getElementById('placement-dates').textContent    =
+                `${placement.start_date} → ${placement.end_date}`;
+
+            // Progress
+            const start    = new Date(placement.start_date);
+            const end      = new Date(placement.end_date);
+            const today    = new Date();
+            const total    = end - start;
+            const elapsed  = today - start;
+            const progress = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+            document.getElementById('placement-progress-bar').style.width = progress + '%';
+            document.getElementById('placement-progress-text').textContent = progress + '%';
+        }
+
+        // Recent Logs
+        const logsArr = Array.isArray(logs) ? logs.slice(0, 5) : [];
+        if (logsArr.length > 0) {
+            document.getElementById('logs-list').innerHTML = logsArr.map(log => `
+                <div class="log-item">
+                    <div class="stat-icon" style="background:#f0f0f0; width:38px; height:38px; border-radius:8px; font-size:1rem;">
+                        <i class="bi bi-journal-check" style="color:#0aa2c0;"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="log-title">${log.log_type === 'daily' ? 'Daily Log' : 'Weekly Log'}</div>
+                        <div class="log-sub">${log.tasks_done ? log.tasks_done.substring(0, 60) + '...' : ''}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="log-date">${log.date}</div>
+                        <span class="badge rounded-pill mt-1 ${
+                            log.status === 'approved' ? 'text-bg-success' :
+                            log.status === 'rejected' ? 'text-bg-danger' : 'text-bg-warning'
+                        }" style="font-size:0.68rem;">${log.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Notifications
+        const recentNotifs = notifs.slice(0, 5);
+        if (recentNotifs.length > 0) {
+            const iconMap = {
+                application: { icon: 'bi-file-earmark-check', bg: '#e8fafd', color: '#0aa2c0' },
+                log:         { icon: 'bi-journal-text',        bg: '#d1fae5', color: '#16a34a' },
+                evaluation:  { icon: 'bi-star',                bg: '#fef9c3', color: '#ca8a04' },
+                placement:   { icon: 'bi-briefcase',           bg: '#fce7f3', color: '#db2777' },
+                general:     { icon: 'bi-bell',                bg: '#f3f4f6', color: '#6b7280' },
+            };
+            document.getElementById('notifs-list').innerHTML = recentNotifs.map(n => {
+                const ic = iconMap[n.notification_type] || iconMap.general;
+                const time = new Date(n.created_at).toLocaleDateString();
+                return `
+                <div class="notif-item ${!n.is_read ? 'unread' : ''}">
+                    <div class="notif-icon" style="background:${ic.bg};">
+                        <i class="bi ${ic.icon}" style="color:${ic.color};"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="notif-title">${n.title}</div>
+                        <div class="notif-msg">${n.message}</div>
+                    </div>
+                    <div class="notif-time">${time}</div>
+                </div>`;
+            }).join('');
+        }
+    });
+</script>
+{% endblock %}

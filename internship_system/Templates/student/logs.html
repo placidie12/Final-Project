@@ -1,0 +1,514 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Activity Logs - InternTrack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .filter-tab {
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1.5px solid #e0e0e0;
+        background: #fff;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+    .filter-tab:hover { border-color: #0dcaf0; color: #0aa2c0; }
+    .filter-tab.active { background: #0dcaf0; border-color: #0dcaf0; color: #000; }
+
+    .log-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        transition: box-shadow 0.2s;
+        margin-bottom: 14px;
+    }
+    .log-card:hover { box-shadow: 0 4px 16px rgba(13,202,240,0.12); }
+
+    .log-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .log-type-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #e8fafd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #0aa2c0;
+        flex-shrink: 0;
+    }
+    .log-title  { font-size: 0.95rem; font-weight: 700; color: #000; }
+    .log-date   { font-size: 0.8rem; color: #6c757d; }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    .status-pending  { background: #fff3cd; color: #856404; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .log-section-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .log-section-value {
+        font-size: 0.85rem;
+        color: #333;
+        line-height: 1.6;
+    }
+    .supervisor-comment {
+        background: #f0fbff;
+        border-left: 3px solid #0dcaf0;
+        border-radius: 0 8px 8px 0;
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        color: #333;
+        margin-top: 12px;
+    }
+    .supervisor-comment.rejected { border-left-color: #dc3545; background: #fff5f5; }
+    .supervisor-comment.approved { border-left-color: #16a34a; background: #f0fdf4; }
+
+    /* Submit form card */
+    .form-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    .form-card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .form-card-header h6 { font-weight: 700; margin: 0; font-size: 0.95rem; }
+    .form-card-body { padding: 20px; }
+
+    .form-label { font-size: 0.82rem; font-weight: 600; color: #000; }
+    .form-control, .form-select {
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0dcaf0;
+        box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+    }
+    .btn-submit {
+        background: #0dcaf0;
+        color: #000;
+        border: none;
+        padding: 9px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-submit:hover { background: #0aa2c0; color: #fff; }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    .stats-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+    .stat-pill .num { font-size: 1.2rem; font-weight: 800; }
+
+    .no-placement-banner {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 12px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+    .no-placement-banner i { font-size: 1.8rem; color: #856404; }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #6c757d;
+    }
+    .empty-state i { font-size: 3rem; color: #dee2e6; display: block; margin-bottom: 12px; }
+
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-800 mb-0">Activity Logs</h4>
+        <p class="text-muted small mb-0">Submit your daily or weekly logs and view supervisor feedback.</p>
+    </div>
+</div>
+
+<!-- No placement warning -->
+<div class="no-placement-banner d-none" id="no-placement-banner">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <div>
+        <div class="fw-700">No Active Placement</div>
+        <div class="small text-muted">You need an active internship placement to submit logs.</div>
+    </div>
+</div>
+
+<!-- Submit Log Form -->
+<div class="form-card" id="submit-form-card">
+    <div class="form-card-header">
+        <h6><i class="bi bi-plus-circle me-2" style="color:#0aa2c0;"></i>Submit New Log</h6>
+        <button class="btn btn-sm" style="background:#f0f0f0; border-radius:8px; font-weight:600; font-size:0.8rem;"
+            onclick="toggleForm()">
+            <i class="bi bi-chevron-up" id="toggle-icon"></i>
+        </button>
+    </div>
+    <div class="form-card-body" id="form-body">
+        <form id="log-form">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Log Type</label>
+                    <select class="form-select" id="log_type">
+                        <option value="daily">Daily Log</option>
+                        <option value="weekly">Weekly Log</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-control" id="log_date">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Hours Worked</label>
+                    <input type="number" class="form-control" id="hours_worked" value="8" min="1" max="24" step="0.5">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Tasks Done <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="tasks_done" rows="3"
+                        placeholder="Describe what you did today/this week..."></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Skills Applied</label>
+                    <textarea class="form-control" id="skills_used" rows="2"
+                        placeholder="e.g. Python, communication, teamwork..."></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Challenges Faced</label>
+                    <textarea class="form-control" id="challenges" rows="2"
+                        placeholder="Any difficulties or blockers?"></textarea>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    <i class="bi bi-send me-1"></i>
+                    <span id="submit-text">Submit Log</span>
+                    <span id="submit-spinner" class="spinner-border spinner-border-sm d-none ms-1"></span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row" id="stats-row"></div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterLogs('all', this)">All</button>
+    <button class="filter-tab" onclick="filterLogs('daily', this)">Daily</button>
+    <button class="filter-tab" onclick="filterLogs('weekly', this)">Weekly</button>
+    <button class="filter-tab" onclick="filterLogs('pending', this)">Pending</button>
+    <button class="filter-tab" onclick="filterLogs('approved', this)">Approved</button>
+    <button class="filter-tab" onclick="filterLogs('rejected', this)">Rejected</button>
+</div>
+
+<!-- Logs List -->
+<div id="logs-list"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (!token) { window.location.href = '/login/'; }
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+    let allLogs = [];
+    let hasPlacement = false;
+    let activeFilter = 'all';
+
+    // Set today's date as default
+    document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
+
+    async function loadLogs() {
+        document.getElementById('logs-list').innerHTML = skeletonLogs(3);
+        try {
+            const res  = await fetch('/api/tracking/logs/', { headers });
+            const data = await res.json();
+
+            if (data.error && data.error.includes('No active placement')) {
+                hasPlacement = false;
+                document.getElementById('no-placement-banner').classList.remove('d-none');
+                document.getElementById('submit-form-card').style.opacity = '0.5';
+                document.getElementById('submit-btn').disabled = true;
+                document.getElementById('logs-list').innerHTML = '';
+                document.getElementById('stats-row').innerHTML = '';
+                return;
+            }
+
+            hasPlacement = true;
+            allLogs = Array.isArray(data) ? data : [];
+            renderStats();
+            renderLogs(allLogs);
+
+        } catch (e) {
+            document.getElementById('logs-list').innerHTML =
+                `<div class="text-center text-danger py-4">Failed to load logs.</div>`;
+        }
+    }
+
+    function renderStats() {
+        const total    = allLogs.length;
+        const pending  = allLogs.filter(l => l.status === 'pending').length;
+        const approved = allLogs.filter(l => l.status === 'approved').length;
+        const rejected = allLogs.filter(l => l.status === 'rejected').length;
+        const hours    = allLogs.reduce((sum, l) => sum + parseFloat(l.hours_worked || 0), 0);
+
+        document.getElementById('stats-row').innerHTML = `
+            <div class="stat-pill">
+                <i class="bi bi-journal-text" style="color:#0aa2c0;"></i>
+                <span class="num">${total}</span> Total Logs
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-hourglass-split" style="color:#f59e0b;"></i>
+                <span class="num">${pending}</span> Pending
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-check-circle" style="color:#16a34a;"></i>
+                <span class="num">${approved}</span> Approved
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-clock-history" style="color:#0aa2c0;"></i>
+                <span class="num">${hours}</span> Hours Logged
+            </div>`;
+    }
+
+    function filterLogs(filter, btn) {
+        activeFilter = filter;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        let filtered = allLogs;
+        if (filter === 'daily')    filtered = allLogs.filter(l => l.log_type === 'daily');
+        else if (filter === 'weekly')   filtered = allLogs.filter(l => l.log_type === 'weekly');
+        else if (filter === 'pending')  filtered = allLogs.filter(l => l.status === 'pending');
+        else if (filter === 'approved') filtered = allLogs.filter(l => l.status === 'approved');
+        else if (filter === 'rejected') filtered = allLogs.filter(l => l.status === 'rejected');
+
+        renderLogs(filtered);
+    }
+
+    function renderLogs(logs) {
+        const list = document.getElementById('logs-list');
+        if (logs.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-journal-x"></i>
+                    <p class="fw-600 mb-1">No logs found</p>
+                    <p class="small">${activeFilter === 'all' ? 'Submit your first log above.' : `No ${activeFilter} logs.`}</p>
+                </div>`;
+            return;
+        }
+        list.innerHTML = logs.map(l => logCard(l)).join('');
+    }
+
+    function logCard(l) {
+        const statusClass = {
+            pending:  'status-pending',
+            approved: 'status-approved',
+            rejected: 'status-rejected',
+        }[l.status] || 'status-pending';
+
+        const statusIcon = {
+            pending:  'bi-hourglass-split',
+            approved: 'bi-check-circle-fill',
+            rejected: 'bi-x-circle-fill',
+        }[l.status] || 'bi-hourglass-split';
+
+        const commentClass = l.status === 'approved' ? 'approved' : l.status === 'rejected' ? 'rejected' : '';
+
+        return `
+        <div class="log-card">
+            <div class="log-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="log-type-icon">
+                        <i class="bi ${l.log_type === 'daily' ? 'bi-journal-check' : 'bi-journal-richtext'}"></i>
+                    </div>
+                    <div>
+                        <div class="log-title">${l.log_type === 'daily' ? 'Daily Log' : 'Weekly Log'}</div>
+                        <div class="log-date"><i class="bi bi-calendar3 me-1"></i>${l.date} &bull; ${l.hours_worked}h worked</div>
+                    </div>
+                </div>
+                <span class="status-badge ${statusClass}">
+                    <i class="bi ${statusIcon} me-1"></i>${capitalize(l.status)}
+                </span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="log-section-label">Tasks Done</div>
+                    <div class="log-section-value">${l.tasks_done}</div>
+                </div>
+                ${l.skills_used ? `
+                <div class="col-md-3">
+                    <div class="log-section-label">Skills Applied</div>
+                    <div class="log-section-value">${l.skills_used}</div>
+                </div>` : ''}
+                ${l.challenges ? `
+                <div class="col-md-3">
+                    <div class="log-section-label">Challenges</div>
+                    <div class="log-section-value">${l.challenges}</div>
+                </div>` : ''}
+            </div>
+
+            ${l.supervisor_comment ? `
+            <div class="supervisor-comment ${commentClass}">
+                <strong style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px;">
+                    <i class="bi bi-chat-left-text me-1"></i>Supervisor Comment
+                </strong><br>
+                ${l.supervisor_comment}
+            </div>` : ''}
+        </div>`;
+    }
+
+    // Submit log
+    document.getElementById('log-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!hasPlacement) return;
+
+        const tasks = document.getElementById('tasks_done').value.trim();
+        if (!tasks) { showAlert('Please describe the tasks you did.', 'danger'); return; }
+
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const spinner   = document.getElementById('submit-spinner');
+
+        submitText.textContent = 'Submitting...';
+        spinner.classList.remove('d-none');
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/tracking/logs/', {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    log_type:     document.getElementById('log_type').value,
+                    date:         document.getElementById('log_date').value,
+                    hours_worked: document.getElementById('hours_worked').value,
+                    tasks_done:   tasks,
+                    skills_used:  document.getElementById('skills_used').value,
+                    challenges:   document.getElementById('challenges').value,
+                }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showAlert('Log submitted successfully!', 'success');
+                document.getElementById('log-form').reset();
+                document.getElementById('log_date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('hours_worked').value = '8';
+                loadLogs();
+            } else {
+                showAlert(Object.values(data)[0]?.[0] || 'Failed to submit log.', 'danger');
+            }
+        } catch (e) {
+            showAlert('Something went wrong.', 'danger');
+        } finally {
+            submitText.textContent = 'Submit Log';
+            spinner.classList.add('d-none');
+            submitBtn.disabled = false;
+        }
+    });
+
+    function toggleForm() {
+        const body = document.getElementById('form-body');
+        const icon = document.getElementById('toggle-icon');
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            icon.className = 'bi bi-chevron-up';
+        } else {
+            body.style.display = 'none';
+            icon.className = 'bi bi-chevron-down';
+        }
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function skeletonLogs(n) {
+        return Array(n).fill('').map(() => `
+            <div class="log-card">
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="d-flex gap-2">
+                        <div class="skeleton" style="width:40px;height:40px;border-radius:10px;"></div>
+                        <div>
+                            <div class="skeleton mb-2" style="height:14px;width:120px;"></div>
+                            <div class="skeleton" style="height:11px;width:80px;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton" style="height:26px;width:80px;border-radius:20px;"></div>
+                </div>
+                <div class="skeleton mb-2" style="height:11px;width:90%;"></div>
+                <div class="skeleton" style="height:11px;width:70%;"></div>
+            </div>`).join('');
+    }
+
+    loadLogs();
+</script>
+{% endblock %}

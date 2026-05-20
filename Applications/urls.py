@@ -3,7 +3,9 @@ from . import views
 
 urlpatterns = [
     path('',                     views.StudentApplicationView.as_view()),
+    path('my/',                  views.StudentApplicationView.as_view()),
     path('org/',                 views.OrgApplicationView.as_view()),
     path('<int:pk>/decision/',   views.ApplicationDecisionView.as_view()),
     path('placements/',          views.PlacementListView.as_view()),
+    path('my-placement/',        views.ActivePlacementView.as_view()),
 ]

@@ -15,9 +15,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class PlacementSerializer(serializers.ModelSerializer):
-    student_name  = serializers.CharField(source='student.user.get_full_name',  read_only=True)
-    org_name      = serializers.CharField(source='organization.company_name',   read_only=True)
-    internship_title = serializers.CharField(source='internship.title',         read_only=True)
+    student_name      = serializers.CharField(source='student.user.get_full_name',      read_only=True)
+    organization_name = serializers.CharField(source='organization.company_name',       read_only=True)
+    internship_title  = serializers.CharField(source='internship.title',                read_only=True)
+    location          = serializers.CharField(source='internship.location',             read_only=True)
 
     class Meta:
         model  = Placement

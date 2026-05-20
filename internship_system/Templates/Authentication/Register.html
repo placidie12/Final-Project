@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternTrack - Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary:      #0dcaf0;
+            --primary-dark: #0aa2c0;
+            --bg:           #ffffff;
+            --text:         #000000;
+            --text-muted:   #6c757d;
+            --border:       #e0e0e0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            min-height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0fbff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+        }
+
+        .branding {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .branding h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .branding p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .register-card {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 28px 32px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 4px 32px rgba(13,202,240,0.1);
+            border: 1px solid rgba(13,202,240,0.2);
+        }
+
+        .register-card h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .role-option {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-option:hover { border-color: var(--primary); }
+
+        .role-option.selected {
+            border-color: var(--primary);
+            background-color: #e8fafd;
+        }
+
+        .role-option i {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .role-option span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-control {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 4px;
+            margin-top: 6px;
+            background-color: var(--border);
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 4px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .strength-text {
+            font-size: 0.72rem;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        .btn-register {
+            width: 100%;
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            padding: 9px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 16px;
+            transition: background 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-register:hover { background-color: var(--primary-dark); color: #fff; }
+        .btn-register:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .login-link {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 0.82rem;
+            color: #aaa;
+        }
+
+        .login-link a { color: var(--primary-dark); text-decoration: none; font-weight: 600; }
+        .login-link a:hover { text-decoration: underline; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+
+        @media (max-width: 480px) {
+            .register-card { padding: 20px 16px; }
+            .role-selector { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-container">
+        <div id="toast" class="toast align-items-center border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-msg"></div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="branding">
+        <h1><i class="bi bi-briefcase-fill me-2" style="color:var(--primary)"></i>InternTrack</h1>
+        <p>Learn &bull; Explore &bull; Connect</p>
+    </div>
+
+    <div class="register-card">
+        <div class="d-flex align-items-center mb-3">
+            <a href="/" class="text-decoration-none text-muted me-auto" style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+                <i class="bi bi-arrow-left me-1"></i>Back to Home
+            </a>
+        </div>
+        <h2>Create Account</h2>
+        <p class="subtitle">Choose your role and fill in your details</p>
+
+        <div class="role-selector">
+            <div class="role-option selected" data-role="student" onclick="selectRole(this)">
+                <i class="bi bi-mortarboard"></i>
+                <span>Student</span>
+            </div>
+            <div class="role-option" data-role="organization" onclick="selectRole(this)">
+                <i class="bi bi-building"></i>
+                <span>Organization</span>
+            </div>
+            <div class="role-option" data-role="supervisor" onclick="selectRole(this)">
+                <i class="bi bi-person-badge"></i>
+                <span>Supervisor</span>
+            </div>
+            <div class="role-option" data-role="university_admin" onclick="selectRole(this)">
+                <i class="bi bi-bank"></i>
+                <span>Uni Admin</span>
+            </div>
+        </div>
+
+        <form id="register-form">
+            <input type="hidden" id="selected-role" value="student">
+
+            <div class="row g-2 mb-2">
+                <div class="col-6">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" placeholder="John" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" placeholder="Doe" required>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="••••••••" required oninput="checkStrength(this.value)">
+                <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                <div class="strength-text" id="strength-text"></div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirm_password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-register" id="submit-btn">
+                <span id="btn-text">Create Account</span>
+                <span id="btn-spinner" class="spinner-border spinner-border-sm d-none"></span>
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/login/">Sign in</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectRole(el) {
+            document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('selected-role').value = el.dataset.role;
+        }
+
+        function checkStrength(password) {
+            const fill = document.getElementById('strength-fill');
+            const text = document.getElementById('strength-text');
+            let strength = 0;
+            if (password.length >= 8)           strength++;
+            if (/[A-Z]/.test(password))         strength++;
+            if (/[0-9]/.test(password))         strength++;
+            if (/[^A-Za-z0-9]/.test(password))  strength++;
+
+            const levels = [
+                { width: '0%',   color: '',        label: '' },
+                { width: '25%',  color: '#ef4444', label: '⚠ Weak — add uppercase, numbers & symbols' },
+                { width: '50%',  color: '#f97316', label: '⚡ Fair — keep going' },
+                { width: '75%',  color: '#eab308', label: '👍 Good — almost there' },
+                { width: '100%', color: '#16a34a', label: '✅ Strong password' },
+            ];
+
+            fill.style.width           = levels[strength].width;
+            fill.style.backgroundColor = levels[strength].color;
+            text.textContent           = levels[strength].label;
+            text.style.color           = levels[strength].color;
+        }
+
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password        = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            if (password !== confirmPassword) { showToast('Passwords do not match.', 'danger'); return; }
+            if (password.length < 8)          { showToast('Password must be at least 8 characters.', 'danger'); return; }
+
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText   = document.getElementById('btn-text');
+            const spinner   = document.getElementById('btn-spinner');
+
+            btnText.textContent = 'Creating...';
+            spinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            const payload = {
+                first_name: document.getElementById('first_name').value,
+                last_name:  document.getElementById('last_name').value,
+                email:      document.getElementById('email').value,
+                password,
+                role:       document.getElementById('selected-role').value,
+            };
+
+            try {
+                const res  = await fetch('/api/accounts/register/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showToast(Object.values(data)[0]?.[0] || 'Registration failed.', 'danger');
+                    return;
+                }
+
+                localStorage.setItem('access',  data.access);
+                localStorage.setItem('refresh', data.refresh);
+                localStorage.setItem('user',    JSON.stringify(data.user));
+                showToast('Account created successfully!', 'success');
+
+                const role = data.user.role;
+                setTimeout(() => {
+                    if      (role === 'student')          window.location.href = '/dashboard/student/';
+                    else if (role === 'organization')     window.location.href = '/dashboard/organization/';
+                    else if (role === 'supervisor')       window.location.href = '/dashboard/supervisor/';
+                    else if (role === 'university_admin') window.location.href = '/dashboard/university/';
+                }, 1000);
+
+            } catch (err) {
+                showToast('Something went wrong. Please try again.', 'danger');
+            } finally {
+                btnText.textContent = 'Create Account';
+                spinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showToast(message, type = 'danger') {
+            const toastEl = document.getElementById('toast');
+            toastEl.className = `toast align-items-center border-0 text-bg-${type}`;
+            document.getElementById('toast-msg').textContent = message;
+            new bootstrap.Toast(toastEl).show();
+        }
+    </script>
+</body>
+</html>

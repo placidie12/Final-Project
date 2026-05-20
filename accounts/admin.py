@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, StudentProfile, OrganizationProfile, UniversityAdminProfile
+from .models import CustomUser, StudentProfile, OrganizationProfile, UniversityAdminProfile, SupervisorProfile, VerificationCode
 
 
 @admin.register(CustomUser)
@@ -25,3 +25,15 @@ class OrganizationProfileAdmin(admin.ModelAdmin):
 class UniversityAdminProfileAdmin(admin.ModelAdmin):
     list_display  = ['user', 'university', 'department', 'position']
     search_fields = ['user__email', 'university']
+
+
+@admin.register(SupervisorProfile)
+class SupervisorProfileAdmin(admin.ModelAdmin):
+    list_display  = ['user', 'organization', 'department', 'position']
+    search_fields = ['user__email', 'organization__company_name']
+
+
+@admin.register(VerificationCode)
+class VerificationCodeAdmin(admin.ModelAdmin):
+    list_display  = ['user', 'code', 'created_at', 'expires_at', 'is_used']
+    search_fields = ['user__email']

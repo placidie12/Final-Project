@@ -1,0 +1,606 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Browse Internships - InternTrack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-bar {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    .search-input-wrap {
+        position: relative;
+    }
+    .search-input-wrap i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    .search-input-wrap input {
+        padding-left: 36px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        height: 40px;
+        width: 100%;
+    }
+    .search-input-wrap input:focus {
+        outline: none;
+        border-color: #0dcaf0;
+        box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+    }
+    .form-select {
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        height: 40px;
+    }
+    .form-select:focus {
+        border-color: #0dcaf0;
+        box-shadow: 0 0 0 3px rgba(13,202,240,0.15);
+    }
+    .btn-search {
+        background: #0dcaf0;
+        color: #000;
+        border: none;
+        padding: 0 20px;
+        height: 40px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.2s;
+    }
+    .btn-search:hover { background: #0aa2c0; color: #fff; }
+    .btn-clear {
+        background: #f0f0f0;
+        color: #000;
+        border: none;
+        padding: 0 16px;
+        height: 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-clear:hover { background: #e0e0e0; }
+
+    .results-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 16px;
+    }
+    .results-info span { font-weight: 700; color: #000; }
+
+    /* Internship Card */
+    .internship-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        transition: box-shadow 0.2s, border-color 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .internship-card:hover {
+        box-shadow: 0 4px 20px rgba(13,202,240,0.15);
+        border-color: rgba(13,202,240,0.4);
+    }
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .org-logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #e8fafd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #0aa2c0;
+        flex-shrink: 0;
+    }
+    .card-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 2px;
+        line-height: 1.3;
+    }
+    .card-org {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 600;
+    }
+    .card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #6c757d;
+    }
+    .meta-item i { color: #0aa2c0; }
+    .card-desc {
+        font-size: 0.82rem;
+        color: #6c757d;
+        line-height: 1.6;
+        flex-grow: 1;
+        margin-bottom: 14px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .card-footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+    .badge-type {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .badge-academic    { background: #fef9c3; color: #854d0e; }
+    .badge-professional{ background: #d1fae5; color: #065f46; }
+    .deadline-text {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    .deadline-text.urgent { color: #dc3545; font-weight: 600; }
+    .btn-view {
+        background: #0dcaf0;
+        color: #000;
+        border: none;
+        padding: 6px 16px;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-view:hover { background: #0aa2c0; color: #fff; }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    .empty-state i { font-size: 3rem; color: #dee2e6; display: block; margin-bottom: 12px; }
+
+    /* Skeleton loader */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Modal */
+    .modal-header { border-bottom: 1px solid #f0f0f0; }
+    .modal-footer { border-top: 1px solid #f0f0f0; }
+    .detail-label { font-size: 0.78rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-value { font-size: 0.9rem; color: #000; font-weight: 500; }
+    .req-tag {
+        display: inline-block;
+        background: #f0f0f0;
+        color: #000;
+        border-radius: 6px;
+        padding: 3px 10px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin: 3px;
+    }
+    .btn-apply {
+        background: #0dcaf0;
+        color: #000;
+        border: none;
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-apply:hover { background: #0aa2c0; color: #fff; }
+    .btn-apply:disabled { opacity: 0.7; cursor: not-allowed; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="fw-800 mb-0">Browse Internships</h4>
+        <p class="text-muted small mb-0">Find and apply for open internship opportunities.</p>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="search-bar">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <div class="search-input-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" id="search-input" placeholder="Search by title or keyword...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="filter-occupation">
+                <option value="">All Fields</option>
+                <option value="IT">Information Technology</option>
+                <option value="SD">Software Development</option>
+                <option value="DS">Data Science</option>
+                <option value="CS">Cybersecurity</option>
+                <option value="WD">Web Development</option>
+                <option value="AI">Artificial Intelligence</option>
+                <option value="ACC">Accounting</option>
+                <option value="FIN">Finance</option>
+                <option value="MKT">Marketing</option>
+                <option value="HR">Human Resources</option>
+                <option value="BA">Business Administration</option>
+                <option value="CE">Civil Engineering</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="GD">Graphic Design</option>
+                <option value="MED">Medicine/Healthcare</option>
+                <option value="EDU">Education</option>
+                <option value="LAW">Law/Legal</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" id="filter-type">
+                <option value="">All Types</option>
+                <option value="Academic">Academic</option>
+                <option value="Professional">Professional</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <div class="search-input-wrap">
+                <i class="bi bi-geo-alt"></i>
+                <input type="text" id="filter-location" placeholder="Location...">
+            </div>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button class="btn-search w-100" onclick="loadInternships()">
+                <i class="bi bi-search me-1"></i>Search
+            </button>
+            <button class="btn-clear" onclick="clearFilters()" title="Clear filters">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Results Info -->
+<div class="results-info" id="results-info"></div>
+
+<!-- Internship Cards -->
+<div class="row g-3" id="internships-grid"></div>
+
+<!-- Detail & Apply Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:14px; border:none;">
+            <div class="modal-header px-4 pt-4 pb-3">
+                <div>
+                    <h5 class="fw-800 mb-1" id="modal-title">—</h5>
+                    <p class="text-muted small mb-0" id="modal-org">—</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Field</div>
+                        <div class="detail-value" id="modal-occupation">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Type</div>
+                        <div class="detail-value" id="modal-type">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value" id="modal-location">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Duration</div>
+                        <div class="detail-value" id="modal-duration">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Start Date</div>
+                        <div class="detail-value" id="modal-start">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">End Date</div>
+                        <div class="detail-value" id="modal-end">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Deadline</div>
+                        <div class="detail-value" id="modal-deadline">—</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="detail-label">Slots</div>
+                        <div class="detail-value" id="modal-slots">—</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label mb-1">Description</div>
+                    <p class="detail-value" id="modal-description" style="line-height:1.7; color:#444;"></p>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label mb-2">Requirements</div>
+                    <div id="modal-requirements"></div>
+                </div>
+
+                <!-- Cover Letter -->
+                <div id="apply-section">
+                    <hr>
+                    <div class="detail-label mb-2">Cover Letter <span class="text-muted fw-400">(optional)</span></div>
+                    <textarea class="form-control" id="cover-letter" rows="4"
+                        placeholder="Write a short cover letter explaining why you're a good fit..."
+                        style="border:1.5px solid #e0e0e0; border-radius:8px; font-size:0.85rem;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer px-4 pb-4">
+                <button type="button" class="btn btn-light fw-600" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-apply" id="apply-btn" onclick="applyNow()">
+                    <span id="apply-text"><i class="bi bi-send me-1"></i>Apply Now</span>
+                    <span id="apply-spinner" class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (!token) { window.location.href = '/login/'; }
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+    let currentInternshipId = null;
+    let appliedIds = [];
+
+    // Load already applied internship IDs
+    async function loadApplied() {
+        try {
+            const res  = await fetch('/api/applications/my/', { headers });
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                appliedIds = data.map(a => a.internship);
+            }
+        } catch (e) {}
+    }
+
+    async function loadInternships() {
+        const search     = document.getElementById('search-input').value.trim();
+        const occupation = document.getElementById('filter-occupation').value;
+        const type       = document.getElementById('filter-type').value;
+        const location   = document.getElementById('filter-location').value.trim();
+
+        const params = new URLSearchParams();
+        if (search)     params.append('search', search);
+        if (occupation) params.append('occupation', occupation);
+        if (type)       params.append('internship_type', type);
+        if (location)   params.append('location', location);
+
+        const grid = document.getElementById('internships-grid');
+        grid.innerHTML = skeletonCards(6);
+
+        try {
+            const res  = await fetch(`/api/internships/?${params}`, { headers });
+            const data = await res.json();
+
+            const info = document.getElementById('results-info');
+            if (!Array.isArray(data) || data.length === 0) {
+                info.innerHTML = '';
+                grid.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="bi bi-briefcase-x"></i>
+                            <p class="fw-600 mb-1">No internships found</p>
+                            <p class="small">Try adjusting your search or filters.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            info.innerHTML = `Showing <span>${data.length}</span> open internship${data.length !== 1 ? 's' : ''}`;
+            grid.innerHTML = data.map(i => internshipCard(i)).join('');
+
+        } catch (e) {
+            document.getElementById('internships-grid').innerHTML = `
+                <div class="col-12 text-center text-danger py-4">Failed to load internships.</div>`;
+        }
+    }
+
+    function internshipCard(i) {
+        const deadline   = new Date(i.deadline);
+        const today      = new Date();
+        const daysLeft   = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+        const isUrgent   = daysLeft <= 7;
+        const alreadyApplied = appliedIds.includes(i.id);
+
+        return `
+        <div class="col-md-6 col-lg-4">
+            <div class="internship-card">
+                <div class="card-top">
+                    <div class="d-flex align-items-start gap-2">
+                        <div class="org-logo"><i class="bi bi-building"></i></div>
+                        <div>
+                            <div class="card-title">${i.title}</div>
+                            <div class="card-org">${i.organization_name || '—'}</div>
+                        </div>
+                    </div>
+                    <span class="badge-type ${i.internship_type === 'Academic' ? 'badge-academic' : 'badge-professional'}">
+                        ${i.internship_type}
+                    </span>
+                </div>
+                <div class="card-meta">
+                    <div class="meta-item"><i class="bi bi-geo-alt"></i>${i.location}</div>
+                    <div class="meta-item"><i class="bi bi-clock"></i>${i.duration}</div>
+                    <div class="meta-item"><i class="bi bi-people"></i>${i.slots} slot${i.slots !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="card-desc">${i.description}</div>
+                <div class="card-footer-row">
+                    <div class="deadline-text ${isUrgent ? 'urgent' : ''}">
+                        <i class="bi bi-calendar-x me-1"></i>
+                        ${isUrgent ? `${daysLeft}d left!` : `Deadline: ${i.deadline}`}
+                    </div>
+                    ${alreadyApplied
+                        ? `<span class="badge text-bg-success" style="font-size:0.75rem; padding:6px 12px;">Applied ✓</span>`
+                        : `<button class="btn-view" onclick="openDetail(${i.id})">View & Apply</button>`
+                    }
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function openDetail(id) {
+        currentInternshipId = id;
+        fetch(`/api/internships/${id}/`, { headers })
+            .then(r => r.json())
+            .then(i => {
+                document.getElementById('modal-title').textContent      = i.title;
+                document.getElementById('modal-org').textContent        = i.organization_name || '—';
+                document.getElementById('modal-occupation').textContent = i.occupation;
+                document.getElementById('modal-type').textContent       = i.internship_type;
+                document.getElementById('modal-location').textContent   = i.location;
+                document.getElementById('modal-duration').textContent   = i.duration;
+                document.getElementById('modal-start').textContent      = i.start_date;
+                document.getElementById('modal-end').textContent        = i.end_date;
+                document.getElementById('modal-deadline').textContent   = i.deadline;
+                document.getElementById('modal-slots').textContent      = `${i.slots} available`;
+                document.getElementById('modal-description').textContent= i.description;
+                document.getElementById('cover-letter').value           = '';
+
+                // Requirements as tags
+                const reqs = i.requirements ? i.requirements.split(',').map(r => r.trim()).filter(r => r) : [];
+                document.getElementById('modal-requirements').innerHTML =
+                    reqs.length > 0 ? reqs.map(r => `<span class="req-tag">${r}</span>`).join('') : '<span class="text-muted small">None specified</span>';
+
+                // Apply button state
+                const applyBtn = document.getElementById('apply-btn');
+                if (appliedIds.includes(id)) {
+                    applyBtn.disabled = true;
+                    document.getElementById('apply-text').innerHTML = '<i class="bi bi-check-circle me-1"></i>Already Applied';
+                } else {
+                    applyBtn.disabled = false;
+                    document.getElementById('apply-text').innerHTML = '<i class="bi bi-send me-1"></i>Apply Now';
+                }
+
+                new bootstrap.Modal(document.getElementById('detailModal')).show();
+            });
+    }
+
+    async function applyNow() {
+        if (!currentInternshipId) return;
+        const applyBtn    = document.getElementById('apply-btn');
+        const applyText   = document.getElementById('apply-text');
+        const spinner     = document.getElementById('apply-spinner');
+        const coverLetter = document.getElementById('cover-letter').value.trim();
+
+        applyText.classList.add('d-none');
+        spinner.classList.remove('d-none');
+        applyBtn.disabled = true;
+
+        try {
+            const res = await fetch('/api/applications/', {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ internship: currentInternshipId, cover_letter: coverLetter }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                appliedIds.push(currentInternshipId);
+                applyText.innerHTML = '<i class="bi bi-check-circle me-1"></i>Applied!';
+                applyText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+                    loadInternships();
+                }, 1200);
+            } else {
+                applyText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+                applyBtn.disabled = false;
+                showAlert(data.error || 'Failed to apply. Please try again.', 'danger');
+            }
+        } catch (e) {
+            applyText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+            applyBtn.disabled = false;
+            showAlert('Something went wrong.', 'danger');
+        }
+    }
+
+    function clearFilters() {
+        document.getElementById('search-input').value      = '';
+        document.getElementById('filter-occupation').value = '';
+        document.getElementById('filter-type').value       = '';
+        document.getElementById('filter-location').value   = '';
+        loadInternships();
+    }
+
+    function skeletonCards(n) {
+        return Array(n).fill('').map(() => `
+            <div class="col-md-6 col-lg-4">
+                <div class="internship-card">
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="skeleton" style="width:44px;height:44px;border-radius:10px;flex-shrink:0;"></div>
+                        <div class="flex-grow-1">
+                            <div class="skeleton mb-2" style="height:14px;width:70%;"></div>
+                            <div class="skeleton" style="height:11px;width:50%;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton mb-2" style="height:11px;width:90%;"></div>
+                    <div class="skeleton mb-2" style="height:11px;width:80%;"></div>
+                    <div class="skeleton mb-3" style="height:11px;width:60%;"></div>
+                    <div class="skeleton" style="height:32px;width:100%;border-radius:8px;"></div>
+                </div>
+            </div>`).join('');
+    }
+
+    // Search on Enter key
+    document.getElementById('search-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') loadInternships();
+    });
+
+    // Init
+    loadApplied().then(() => loadInternships());
+</script>
+{% endblock %}

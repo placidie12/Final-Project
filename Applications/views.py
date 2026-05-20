@@ -104,6 +104,21 @@ class ApplicationDecisionView(APIView):
         return Response(serializer.data)
 
 
+class ActivePlacementView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            student   = StudentProfile.objects.get(user=request.user)
+            placement = Placement.objects.filter(student=student, status='active').first()
+            if not placement:
+                return Response(None)
+            serializer = PlacementSerializer(placement)
+            return Response(serializer.data)
+        except StudentProfile.DoesNotExist:
+            return Response({'error': 'Student profile not found'}, status=404)
+
+
 class PlacementListView(APIView):
    
     permission_classes = [permissions.IsAuthenticated]

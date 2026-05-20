@@ -24,6 +24,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ("student", "Student"),
         ("organization", "Organization"),
         ("university_admin", "University Admin"),
+        ("supervisor", "Supervisor"),
     )
 
     email = models.EmailField(unique=True)
@@ -84,3 +85,28 @@ class UniversityAdminProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.university}"
+
+
+class SupervisorProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="supervisor_profile")
+    organization = models.ForeignKey(OrganizationProfile, on_delete=models.CASCADE, related_name="supervisors")
+    department = models.CharField(max_length=150)
+    position = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} - {self.organization.company_name}"
+
+
+class VerificationCode(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="verification_codes")
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        return not self.is_used and timezone.now() < self.expires_at
+
+    def __str__(self):
+        return f"{self.user.email} - {self.code}"

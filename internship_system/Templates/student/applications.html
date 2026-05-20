@@ -1,0 +1,346 @@
+{% extends 'base/base.html' %}
+
+{% block title %}My Applications - InternTrack{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .filter-tab {
+        padding: 6px 18px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1.5px solid #e0e0e0;
+        background: #fff;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+    .filter-tab:hover { border-color: #0dcaf0; color: #0aa2c0; }
+    .filter-tab.active { background: #0dcaf0; border-color: #0dcaf0; color: #000; }
+
+    .app-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        padding: 20px;
+        transition: box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .app-card:hover { box-shadow: 0 4px 20px rgba(13,202,240,0.12); }
+
+    .app-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .org-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #e8fafd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #0aa2c0;
+        flex-shrink: 0;
+    }
+    .app-title { font-size: 0.95rem; font-weight: 700; color: #000; margin-bottom: 2px; }
+    .app-org   { font-size: 0.8rem; color: #6c757d; font-weight: 600; }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .status-pending  { background: #fff3cd; color: #856404; }
+    .status-reviewed { background: #cff4fc; color: #055160; }
+    .status-approved { background: #d1fae5; color: #065f46; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .app-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #6c757d;
+    }
+    .meta-item i { color: #0aa2c0; }
+
+    .app-notes {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        color: #444;
+        margin-bottom: 12px;
+        border-left: 3px solid #0dcaf0;
+    }
+    .app-notes.rejected { border-left-color: #dc3545; }
+    .app-notes.approved { border-left-color: #16a34a; }
+
+    .btn-detail {
+        background: #f0fbff;
+        color: #0aa2c0;
+        border: 1px solid rgba(13,202,240,0.3);
+        padding: 6px 16px;
+        border-radius: 7px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-detail:hover { background: #0dcaf0; color: #000; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+    .empty-state i { font-size: 3rem; color: #dee2e6; display: block; margin-bottom: 12px; }
+
+    .stats-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+    .stat-pill .num { font-size: 1.2rem; font-weight: 800; }
+
+    /* skeleton */
+    .skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.2s infinite;
+        border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="fw-800 mb-0">My Applications</h4>
+        <p class="text-muted small mb-0">Track the status of all your internship applications.</p>
+    </div>
+    <a href="/internships/" class="btn btn-sm" style="background:#0dcaf0; color:#000; font-weight:700; border-radius:8px; padding:8px 18px;">
+        <i class="bi bi-search me-1"></i>Browse More
+    </a>
+</div>
+
+<!-- Stats -->
+<div class="stats-row" id="stats-row"></div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterApps('all', this)">All</button>
+    <button class="filter-tab" onclick="filterApps('pending', this)">Pending</button>
+    <button class="filter-tab" onclick="filterApps('reviewed', this)">Reviewed</button>
+    <button class="filter-tab" onclick="filterApps('approved', this)">Approved</button>
+    <button class="filter-tab" onclick="filterApps('rejected', this)">Rejected</button>
+</div>
+
+<!-- Applications Grid -->
+<div class="row g-3" id="apps-grid"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (!token) { window.location.href = '/login/'; }
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+    let allApps   = [];
+    let activeFilter = 'all';
+
+    async function loadApplications() {
+        document.getElementById('apps-grid').innerHTML = skeletonCards(4);
+        try {
+            const res  = await fetch('/api/applications/my/', { headers });
+            const data = await res.json();
+            allApps    = Array.isArray(data) ? data : [];
+            renderStats();
+            renderApps(allApps);
+        } catch (e) {
+            document.getElementById('apps-grid').innerHTML =
+                `<div class="col-12 text-center text-danger py-4">Failed to load applications.</div>`;
+        }
+    }
+
+    function renderStats() {
+        const total    = allApps.length;
+        const pending  = allApps.filter(a => a.status === 'pending').length;
+        const approved = allApps.filter(a => a.status === 'approved').length;
+        const rejected = allApps.filter(a => a.status === 'rejected').length;
+
+        document.getElementById('stats-row').innerHTML = `
+            <div class="stat-pill">
+                <i class="bi bi-file-earmark-text" style="color:#0aa2c0;"></i>
+                <span class="num">${total}</span> Total
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-hourglass-split" style="color:#f59e0b;"></i>
+                <span class="num">${pending}</span> Pending
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-check-circle" style="color:#16a34a;"></i>
+                <span class="num">${approved}</span> Approved
+            </div>
+            <div class="stat-pill">
+                <i class="bi bi-x-circle" style="color:#dc3545;"></i>
+                <span class="num">${rejected}</span> Rejected
+            </div>`;
+    }
+
+    function filterApps(status, btn) {
+        activeFilter = status;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const filtered = status === 'all' ? allApps : allApps.filter(a => a.status === status);
+        renderApps(filtered);
+    }
+
+    function renderApps(apps) {
+        const grid = document.getElementById('apps-grid');
+        if (apps.length === 0) {
+            grid.innerHTML = `
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="bi bi-file-earmark-x"></i>
+                        <p class="fw-600 mb-1">No applications found</p>
+                        <p class="small">${activeFilter === 'all'
+                            ? 'You haven\'t applied to any internships yet.'
+                            : `No ${activeFilter} applications.`}
+                        </p>
+                        ${activeFilter === 'all' ? `<a href="/internships/" class="btn btn-sm mt-2" style="background:#0dcaf0;color:#000;font-weight:700;border-radius:8px;">Browse Internships</a>` : ''}
+                    </div>
+                </div>`;
+            return;
+        }
+        grid.innerHTML = apps.map(a => appCard(a)).join('');
+    }
+
+    function appCard(a) {
+        const appliedDate  = new Date(a.applied_at).toLocaleDateString();
+        const reviewedDate = a.reviewed_at ? new Date(a.reviewed_at).toLocaleDateString() : null;
+
+        const statusClass = {
+            pending:  'status-pending',
+            reviewed: 'status-reviewed',
+            approved: 'status-approved',
+            rejected: 'status-rejected',
+        }[a.status] || 'status-pending';
+
+        const statusIcon = {
+            pending:  'bi-hourglass-split',
+            reviewed: 'bi-eye',
+            approved: 'bi-check-circle-fill',
+            rejected: 'bi-x-circle-fill',
+        }[a.status] || 'bi-hourglass-split';
+
+        const notesClass = a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : '';
+
+        return `
+        <div class="col-md-6 col-lg-4">
+            <div class="app-card">
+                <div class="app-card-top">
+                    <div class="d-flex align-items-start gap-2">
+                        <div class="org-icon"><i class="bi bi-building"></i></div>
+                        <div>
+                            <div class="app-title">${a.internship_title || '—'}</div>
+                            <div class="app-org">${a.org_name || '—'}</div>
+                        </div>
+                    </div>
+                    <span class="status-badge ${statusClass}">
+                        <i class="bi ${statusIcon} me-1"></i>${capitalize(a.status)}
+                    </span>
+                </div>
+
+                <div class="app-meta">
+                    <div class="meta-item"><i class="bi bi-calendar-plus"></i>Applied: ${appliedDate}</div>
+                    ${reviewedDate ? `<div class="meta-item"><i class="bi bi-calendar-check"></i>Reviewed: ${reviewedDate}</div>` : ''}
+                </div>
+
+                ${a.cover_letter ? `
+                <div class="app-notes ${notesClass}">
+                    <strong style="font-size:0.75rem;">Cover Letter:</strong><br>
+                    ${a.cover_letter.length > 100 ? a.cover_letter.substring(0, 100) + '...' : a.cover_letter}
+                </div>` : ''}
+
+                ${a.notes ? `
+                <div class="app-notes ${notesClass}">
+                    <strong style="font-size:0.75rem;">Organization Note:</strong><br>
+                    ${a.notes}
+                </div>` : ''}
+
+                <div class="mt-auto pt-2 d-flex justify-content-between align-items-center">
+                    <span style="font-size:0.75rem; color:#aaa;">ID #${a.id}</span>
+                    ${a.status === 'approved' ? `
+                    <a href="/tracking/" class="btn-detail">
+                        <i class="bi bi-graph-up me-1"></i>View Placement
+                    </a>` : `
+                    <span class="btn-detail" style="cursor:default; opacity:0.5;">
+                        ${a.status === 'pending' ? 'Awaiting review' : a.status === 'reviewed' ? 'Under consideration' : 'Not accepted'}
+                    </span>`}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function skeletonCards(n) {
+        return Array(n).fill('').map(() => `
+            <div class="col-md-6 col-lg-4">
+                <div class="app-card">
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="skeleton" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;"></div>
+                        <div class="flex-grow-1">
+                            <div class="skeleton mb-2" style="height:14px;width:70%;"></div>
+                            <div class="skeleton" style="height:11px;width:50%;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton mb-2" style="height:11px;width:80%;"></div>
+                    <div class="skeleton mb-3" style="height:11px;width:60%;"></div>
+                    <div class="skeleton" style="height:32px;border-radius:8px;"></div>
+                </div>
+            </div>`).join('');
+    }
+
+    loadApplications();
+</script>
+{% endblock %}
